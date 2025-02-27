@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"os"
 	"os/exec"
 	"regexp"
@@ -158,7 +160,7 @@ func titleCase(subject string) string {
 	subject = strings.ReplaceAll(subject, "_", " ")
 	words := strings.Fields(subject)
 	for i, word := range words {
-		words[i] = strings.Title(word)
+		words[i] = cases.Title(language.English).String(word) //strings.Title(word)
 	}
 	return strings.Join(words, "")
 }
