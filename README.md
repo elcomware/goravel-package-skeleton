@@ -40,21 +40,6 @@ go run . artisan vendor:publish --package=github.com/:vendor_slug/:package_slug
 
 ```
 
-Register service provider
-// config/app.go
-import examplepackage "github.com/goravel/example-package"
-
-"providers": []foundation.ServiceProvider{
-    ...
-    &examplepackage.ServiceProvider{},
-}
-Publish Configuration
-
-Testing
-
-
-
-
 You can publish and run the migrations with:
 
 ```bash
@@ -91,6 +76,17 @@ import examplefacades "github.com/goravel/example-package/facades"
 
 fmt.Println(examplefacades.Hello().World())
 The console will print Welcome To Goravel Package.
+```
+
+```bash
+Register service provider
+// config/app.go
+import examplepackage "github.com/goravel/example-package"
+
+"providers": []foundation.ServiceProvider{
+    ...
+    &examplepackage.ServiceProvider{},
+}
 ```
 
 ## Testing
