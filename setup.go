@@ -117,7 +117,7 @@ func main() {
 	}
 
 	if confirm("Let this script delete itself?", true) {
-		err := os.Remove(os.Args[0])
+		err := os.Remove("setup.go")
 		if err != nil {
 			return
 		}
@@ -219,19 +219,11 @@ func replaceInFile(file string, replacements map[string]string) {
 	}
 }*/
 
-// renameFile renames a file.
-func renameFile(oldPath, newPath string) {
-	err := os.Rename(oldPath, newPath)
-	if err != nil {
-		writeln(fmt.Sprintf("Error renaming file %s to %s: %v\n", oldPath, newPath, err))
-	}
-}
-
-
 func removeFile(filename string) {
 	if _, err := os.Stat(filename); err == nil {
 		err := os.Remove(filename)
 		if err != nil {
+			writeln(fmt.Sprintf("Error removing file %s : %v\n", filename, err))
 			return
 		}
 	}
