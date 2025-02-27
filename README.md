@@ -24,11 +24,10 @@ We invest a lot of resources into creating [best in class open source packages](
 
 ## Installation / Add package
 
-1. You can install the package via go install:
+1. You can install the package via go get -u:
 
 ```bash
 # Install the latest version of the goravel installer:
-go install github.com/:vendor_slug/:package_slug@latest
 
 go get -u github.com/:vendor_slug/:package_slug
 ```
