@@ -4,10 +4,10 @@ import (
 	"github.com/goravel/framework/facades"
 )
 
-// config for VendorName/Skeleton
+// config for Elcomware/GoSecure
 func init() {
 	config := facades.Config()
-	config.Add(":package_slug", map[string]any{
-		"name": ":package_name",
+	config.Add("go-secure", map[string]any{
+		"name": "go-secure",
 	})
 }

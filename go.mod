@@ -1,4 +1,4 @@
-module github.com/vendorName/packageName
+module github.com/Elcomware/go-secure
 
 go 1.24.0
 

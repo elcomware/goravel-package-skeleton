@@ -64,7 +64,7 @@ func main() {
 		"README.md",
 		"go.mod",
 		"main.go",
-		"config/config.go",
+		"config/skeleton.go",
 		"routes/web.go",
 	}
 
@@ -87,6 +87,7 @@ func main() {
 		":package_description":         description,
 	}
 
+	//Replace names
 	for _, file := range files {
 		replaceInFile(file, replacements)
 	}
@@ -105,6 +106,11 @@ func main() {
 		removeFile(".github/workflows/update-changelog.yml")
 	}
 
+	// Rename files
+	renameFile("config/skeleton.go", fmt.Sprintf("config/%s.go", packageSlug))
+	renameFile("package_slug.go", fmt.Sprintf("%s.go", packageSlug))
+	renameFile("skeleton_service_provider.go", fmt.Sprintf("%s_service_provider.go", packageSlug))
+	//Clean up
 	if confirm("Execute `go mod tidy` and run tests?", true) {
 		run("go mod tidy")
 		run("go test ./...")
@@ -116,6 +122,8 @@ func main() {
 			return
 		}
 	}
+
+	writeln("Package initialized successfully!")
 }
 
 func run(command string) string {
@@ -165,9 +173,11 @@ func titleCase(subject string) string {
 	return strings.Join(words, "")
 }
 
+// replaceInFile replaces placeholders in a file with actual values.
 func replaceInFile(file string, replacements map[string]string) {
 	content, err := os.ReadFile(file)
 	if err != nil {
+		writeln(fmt.Sprintf("Error reading file %s: %v\n", file, err))
 		return
 	}
 
@@ -178,7 +188,15 @@ func replaceInFile(file string, replacements map[string]string) {
 
 	err = os.WriteFile(file, []byte(newContent), 0644)
 	if err != nil {
-		return
+		writeln(fmt.Sprintf("Error writing file %s: %v\n", file, err))
+	}
+}
+
+// renameFile renames a file.
+func renameFile(oldPath, newPath string) {
+	err := os.Rename(oldPath, newPath)
+	if err != nil {
+		writeln(fmt.Sprintf("Error renaming file %s to %s: %v\n", oldPath, newPath, err))
 	}
 }
 
