@@ -226,7 +226,7 @@ func initializePackage() {
 		":vendor_slug": vendorSlug,
 		"VendorName":   vendorNamespace,
 
-		"PackageName":                  packageName,
+		"PackageName":                  className,
 		"packageName":                  packageSlug,
 		":package_name":                packageName,
 		":package_slug":                packageSlug,
