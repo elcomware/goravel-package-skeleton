@@ -206,13 +206,13 @@ func initializePackage() {
 	}
 
 	files := []string{
-		"README.md",
-		"go.mod",
-		"config/packageName.go",
-		"contracts/packageName.go",
-		"facades/packageName.go",
-		"commands/packageName.go",
-		"packageName.go",
+		"./README.md",
+		"./go.mod",
+		"./config/packageName.go",
+		"./contracts/packageName.go",
+		"./facades/packageName.go",
+		"./commands/packageName.go",
+		"./packageName.go",
 	}
 
 	replacements := map[string]string{
@@ -257,10 +257,11 @@ func initializePackage() {
 	}
 
 	// Rename files
-	renameFile("config/packageName.go", fmt.Sprintf("config/%s.go", packageSlug))
-	renameFile("commands/packageName.go", fmt.Sprintf("commands/%s.go", packageSlug))
-	renameFile("packageName.go", fmt.Sprintf("%s.go", packageSlug))
-	renameFile("service_provider.go", fmt.Sprintf("%s_service_provider.go", packageSlug))
+	renameFile("./config/packageName.go", fmt.Sprintf("./config/%s.go", packageSlug))
+	renameFile("./contracts/packageName.go", fmt.Sprintf("./contracts/%s.go", packageSlug))
+	renameFile("./commands/packageName.go", fmt.Sprintf("./commands/%s.go", packageSlug))
+	renameFile("./facades/packageName.go", fmt.Sprintf("./facdes/%s.go", packageSlug))
+	renameFile("./packageName.go", fmt.Sprintf("%s.go", packageSlug))
 
 	// Clean up
 	if confirm("Execute `go mod tidy` and run tests?", true) {
@@ -269,7 +270,8 @@ func initializePackage() {
 	}
 
 	if confirm("Let this script delete itself?", true) {
-		err := fs.Remove("setup.go")
+		err := fs.Remove("./main/setup.go")
+		err = fs.Remove("./main/setup_test.go")
 		if err != nil {
 			return
 		}
