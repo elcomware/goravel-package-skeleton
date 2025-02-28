@@ -200,25 +200,6 @@ func renameFile(oldPath, newPath string) {
 	}
 }
 
-/* replaceInFile replaces placeholders in a file with actual values.
-func replaceInFile(file string, replacements map[string]string) {
-	content, err := os.ReadFile(file)
-	if err != nil {
-		writeln(fmt.Sprintf("Error reading file %s: %v\n", file, err))
-		return
-	}
-
-	newContent := string(content)
-	for oldText, newText := range replacements {
-		newContent = strings.ReplaceAll(newContent, oldText, newText)
-	}
-
-	err = os.WriteFile(file, []byte(newContent), 0644)
-	if err != nil {
-		writeln(fmt.Sprintf("Error writing file %s: %v\n", file, err))
-	}
-}*/
-
 func removeFile(filename string) {
 	if _, err := os.Stat(filename); err == nil {
 		err := os.Remove(filename)
