@@ -15,5 +15,5 @@ func NewPackageName(config config.Config) *PackageName {
 }
 
 func (s *PackageName) PackageNameAction() string {
-	return fmt.Sprintf("Welcome To Goravel %s", s.config.GetString("package_slug.name"))
+	return fmt.Sprintf("Welcome To Goravel %s", s.config.GetString("packageName.name"))
 }
