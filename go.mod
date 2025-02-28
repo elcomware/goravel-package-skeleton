@@ -1,8 +1,12 @@
-module github.com/Elcomware/go-secure
+module github.com/vendorName/packageName
 
 go 1.24.0
 
-require github.com/goravel/framework v1.15.3
+require (
+	github.com/goravel/framework v1.15.3
+	github.com/stretchr/testify v1.10.0
+	golang.org/x/text v0.22.0
+)
 
 require (
 	atomicgo.dev/cursor v0.2.0 // indirect
@@ -110,7 +114,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.19.0 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/stretchr/testify v1.10.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/urfave/cli/v2 v2.27.5 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
@@ -136,7 +139,6 @@ require (
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/term v0.29.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
 	golang.org/x/tools v0.30.0 // indirect
 	google.golang.org/api v0.214.0 // indirect
