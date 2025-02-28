@@ -1,9 +1,9 @@
 package packageName
 
 import (
+	"github.com/elcomware/fortify/commands"
 	"github.com/goravel/framework/contracts/console"
 	"github.com/goravel/framework/contracts/foundation"
-	"github.com/vendorName/packageName/commands"
 )
 
 const Binding = "packageName"
