@@ -9,7 +9,7 @@
 This repo can be used to scaffold a Goravel package. Follow these steps to get started:
 
 1. Press the "Use this template" button at the top of this repo to create a new repo with the contents of this skeleton.
-2. Run "go run ./configure.go" to run a script that will replace all placeholders throughout all the files.
+2. Run "go run setup.go" to run a script that will replace all placeholders throughout all the files.
 3. Have fun creating your package.
 4. If you need help creating a package, consider picking up our <a href="https://www.goravel.dev/digging-deeper/package-development.html">Goralvel Package Deveopment</a> Documentation.
 ---
