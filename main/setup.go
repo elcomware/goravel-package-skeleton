@@ -213,6 +213,7 @@ func initializePackage() {
 		"./facades/packageName.go",
 		"./commands/packageName.go",
 		"./packageName.go",
+		"./service_provider.go",
 	}
 
 	replacements := map[string]string{
@@ -260,7 +261,7 @@ func initializePackage() {
 	renameFile("./config/packageName.go", fmt.Sprintf("./config/%s.go", packageSlug))
 	renameFile("./contracts/packageName.go", fmt.Sprintf("./contracts/%s.go", packageSlug))
 	renameFile("./commands/packageName.go", fmt.Sprintf("./commands/%s.go", packageSlug))
-	renameFile("./facades/packageName.go", fmt.Sprintf("./facdes/%s.go", packageSlug))
+	renameFile("./facades/packageName.go", fmt.Sprintf("./facades/%s.go", packageSlug))
 	renameFile("./packageName.go", fmt.Sprintf("%s.go", packageSlug))
 
 	// Clean up
