@@ -7,7 +7,7 @@ import (
 // config for VendorName/PackageName
 func init() {
 	config := facades.Config()
-	config.Add("package_slug", map[string]any{
-		"name": "package_slug",
+	config.Add("packageName", map[string]any{
+		"name": "packageName",
 	})
 }
