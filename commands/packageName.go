@@ -15,12 +15,12 @@ func NewPackageName() *PackageName {
 
 // Signature The name and signature of the console command.
 func (receiver *PackageName) Signature() string {
-	return ":package_slug"
+	return ":packageName"
 }
 
 // Description The console command description.
 func (receiver *PackageName) Description() string {
-	return ":package_slug"
+	return ":packageName"
 }
 
 // Extend The console command extend.
@@ -30,7 +30,7 @@ func (receiver *PackageName) Extend() command.Extend {
 
 // Handle Execute the console command.
 func (receiver *PackageName) Handle(ctx console.Context) error {
-	fmt.Println("Run :package_slug command")
+	fmt.Println("Run :packageName command")
 
 	return nil
 }
