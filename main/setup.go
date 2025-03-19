@@ -18,6 +18,7 @@ type FileSystem interface {
 	WriteFile(filename string, data []byte, perm os.FileMode) error
 	Rename(oldPath, newPath string) error
 	Remove(filename string) error
+	RemoveAll(filename string) error
 	Stat(filename string) (os.FileInfo, error)
 }
 
@@ -38,6 +39,10 @@ func (fs RealFileSystem) Rename(oldPath, newPath string) error {
 
 func (fs RealFileSystem) Remove(filename string) error {
 	return os.Remove(filename)
+}
+
+func (fs RealFileSystem) RemoveAll(filename string) error {
+	return os.RemoveAll(filename)
 }
 
 func (fs RealFileSystem) Stat(filename string) (os.FileInfo, error) {
@@ -271,8 +276,8 @@ func initializePackage() {
 	}
 
 	if confirm("Let this script delete itself?", true) {
-		err := fs.Remove("./main/setup.go")
-		err = fs.Remove("./main/setup_test.go")
+		//err := fs.Remove("./main/setup.go")
+		err := fs.RemoveAll("./main")
 		if err != nil {
 			return
 		}

@@ -20,7 +20,7 @@ func (receiver *PackageName) Signature() string {
 
 // Description The console command description.
 func (receiver *PackageName) Description() string {
-	return ":packageName"
+	return ":packageName command"
 }
 
 // Extend The console command extend.
@@ -30,6 +30,7 @@ func (receiver *PackageName) Extend() command.Extend {
 
 // Handle Execute the console command.
 func (receiver *PackageName) Handle(ctx console.Context) error {
+
 	fmt.Println("Run :packageName command")
 
 	return nil
