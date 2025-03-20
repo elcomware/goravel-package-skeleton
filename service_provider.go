@@ -21,14 +21,14 @@ type ServiceProvider struct {
 }
 
 // ConfigurePackage is an abstract method that must be implemented by the package.
-func (sp *ServiceProvider) ConfigurePackage(pkg *PackageName) {
+func (sp *ServiceProvider) ConfigurePackage() {
 	// This method must be implemented by the package.
 }
 
 // Register is called when the package is registered.
 func (sp *ServiceProvider) Register(app foundation.Application) {
 	//App = app
-	sp.registeringPackage(app)
+	sp.registeringPackage()
 	//initialise package new instance and inject dependencies
 	sp.packageInstance = &PackageName{} //NewPackageName(app.MakeConfig())
 
@@ -40,14 +40,14 @@ func (sp *ServiceProvider) Register(app foundation.Application) {
 	//Set package base directory
 	sp.packageInstance.SetBasePath(sp.GetPackageBaseDir())
 
-	sp.ConfigurePackage(sp.packageInstance)
+	sp.ConfigurePackage()
 
 	if sp.packageInstance.FullName == "" {
 		panic("Package FullName is required")
 	}
 
 	sp.registerConfigs()
-	sp.packageRegistered(app)
+	sp.packageRegistered()
 
 }
 
@@ -59,7 +59,7 @@ func (sp *ServiceProvider) GetPackageBaseDir() string {
 }
 
 // RegisteringPackage is called before the package is registered.
-func (sp *ServiceProvider) registeringPackage(app foundation.Application) {
+func (sp *ServiceProvider) registeringPackage() {
 	// Optional: Override this method in your package.
 }
 
@@ -76,7 +76,7 @@ func (sp *ServiceProvider) registerConfigs() {
 }
 
 // PackageRegistered is called after the package is registered.
-func (sp *ServiceProvider) packageRegistered(app foundation.Application) {
+func (sp *ServiceProvider) packageRegistered() {
 	// Optional: Override this method in your package.
 }
 
@@ -98,7 +98,7 @@ func (sp *ServiceProvider) Boot(app foundation.Application) {
 		bootPackageViews(app, packageName).
 		bootPackageViewComponents(app, packageName).
 		bootPackageViewComposers(app, packageName).
-		bootPackageViewSharedData(app, packageName)
+		bootPackageViewSharedData()
 
 	sp.PackageBooted()
 
@@ -352,7 +352,7 @@ func (sp *ServiceProvider) bootPackageViewComposers(app foundation.Application, 
 }
 
 // BootPackageViewSharedData boots the package's shared view data.
-func (sp *ServiceProvider) bootPackageViewSharedData(app foundation.Application, packageName string) *ServiceProvider {
+func (sp *ServiceProvider) bootPackageViewSharedData() *ServiceProvider {
 	if len(sp.packageInstance.ViewSharedDataTools.SharedData) == 0 {
 		return sp
 	}
