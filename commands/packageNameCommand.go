@@ -7,29 +7,29 @@ import (
 	"github.com/goravel/framework/contracts/console/command"
 )
 
-type PackageName struct{}
+type PackageNameCommand struct{}
 
-func NewPackageName() *PackageName {
-	return &PackageName{}
+func NewPackageName() *PackageNameCommand {
+	return &PackageNameCommand{}
 }
 
 // Signature The name and signature of the console command.
-func (receiver *PackageName) Signature() string {
+func (receiver *PackageNameCommand) Signature() string {
 	return ":packageName"
 }
 
 // Description The console command description.
-func (receiver *PackageName) Description() string {
+func (receiver *PackageNameCommand) Description() string {
 	return ":packageName command"
 }
 
 // Extend The console command extend.
-func (receiver *PackageName) Extend() command.Extend {
+func (receiver *PackageNameCommand) Extend() command.Extend {
 	return command.Extend{}
 }
 
 // Handle Execute the console command.
-func (receiver *PackageName) Handle(ctx console.Context) error {
+func (receiver *PackageNameCommand) Handle(ctx console.Context) error {
 
 	fmt.Println("Run :packageName command")
 

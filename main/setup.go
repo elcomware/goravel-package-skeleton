@@ -187,8 +187,8 @@ func initializePackage() {
 	variableName := string(unicode.ToLower(rune(className[0]))) + className[1:]
 	description := ask("Package description", fmt.Sprintf("This is my package %s", packageSlug))
 
-	useGoLint := confirm("Enable Go Lint?", true)
-	useDependabot := confirm("Enable Dependabot?", true)
+	useGoLint := confirm("Enabled Go Lint?", true)
+	useDependabot := confirm("Enabled Dependabot?", true)
 	useChangelogWorkflow := confirm("Use automatic changelog updater workflow?", true)
 
 	writeln("------")

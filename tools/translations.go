@@ -1,11 +1,11 @@
 package tools
 
-type PackageTranslations struct {
-	Enable bool
+type TranslationTools struct {
+	Enabled bool
 }
 
 // EnableTranslation enables translations.
-func (t *PackageTranslations) EnableTranslation() *PackageTranslations {
-	t.Enable = true
+func (t *TranslationTools) EnableTranslation() *TranslationTools {
+	t.Enabled = true
 	return t
 }

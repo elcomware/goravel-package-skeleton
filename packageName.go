@@ -1,7 +1,7 @@
 package packageName
 
 import (
-	"github.com/goravel/framework/contracts/config"
+	"github.com/goravel/framework/facades"
 	"github.com/vendorName/packageName/tools"
 	"golang.org/x/term"
 	"os"
@@ -12,49 +12,50 @@ import (
 
 // PackageName represents a modular component in Goravel.
 type PackageName struct {
-	config         config.Config
-	name           string
-	shortName      string
-	basePath       string
-	pkgConfig      tools.PackageConfigs
-	viewComponents tools.PackageViewComponents
-	viewComposer   tools.PackageViewComposers
-	viewSharedData tools.PackageViewSharedData
-	tools.PackageMigrations
-	tools.PackageCommands
-	tools.PackageAssets
-	tools.PackageTranslations
-	tools.PackageViews
-	tools.PackageRoutes
-	tools.PackageProviders
+	FullName                string
+	ShortName               string
+	BasePath                string
+	PublishableProviderName string
+
+	ConfigTools         tools.ConfigTools
+	ViewComponentTools  tools.ViewComponentTools
+	ViewComposerTools   tools.ViewComposerTools
+	ViewSharedDataTools tools.ViewSharedDataTools
+	MigrationTools      tools.MigrationTools
+	CommandTools        tools.CommandTools
+	AssetTools          tools.AssetTools
+	TranslationTools    tools.TranslationTools
+	ViewsTools          tools.ViewTools
+	RouteTools          tools.RoutesTools
+	ProviderTools       tools.ProviderTools
 }
 
 // NewPackageName creates a new PackageName instance.
-func NewPackageName(config config.Config, name string) *PackageName {
+func NewPackageName(name string) *PackageName {
 
-	shortName := getShortNameFromConfig(config, name)
+	shortName := getShortName(name)
 
 	return &PackageName{
-		config:    config,
-		basePath:  "",
-		name:      name,
-		shortName: shortName,
+		BasePath:  "",
+		FullName:  name,
+		ShortName: shortName,
 
 		// Initialize dependencies if needed
 		//Assets:          &tools.Assets{},
-		pkgConfig:      tools.PackageConfigs{ShortName: shortName},
-		viewComponents: tools.PackageViewComponents{ViewComponents: make(map[string]string)},
-		viewComposer:   tools.PackageViewComposers{ViewComposers: make(map[string]string)},
-		viewSharedData: tools.PackageViewSharedData{SharedViewData: make(map[string]interface{})},
+		ConfigTools:         tools.ConfigTools{ShortName: shortName},
+		ViewComponentTools:  tools.ViewComponentTools{Components: make(map[string]string)},
+		ViewComposerTools:   tools.ViewComposerTools{Composers: make(map[string]string)},
+		ViewSharedDataTools: tools.ViewSharedDataTools{SharedData: make(map[string]interface{})},
 	}
 }
 
-// getShortNameFromConfig is a function to dynamically determine the ShortName
-func getShortNameFromConfig(config config.Config, name string) string {
-	// Example logic to determine the short name
+// getShortName is a function to dynamically determine the ShortName
+// ShortName returns the short FullName of the package, removing the 'goravel-' prefix.
+func getShortName(name string) string {
+	// Example logic to determine the short FullName
 	// This can fetch it from the config, environment, or fallback to a default value
-	if config.GetString("package.short_name") != "" {
-		return config.GetString("package.short_name")
+	if facades.Config().GetString("package.short_name") != "" {
+		return facades.Config().GetString("package.short_name")
 	}
 
 	if name == "" {
@@ -63,25 +64,17 @@ func getShortNameFromConfig(config config.Config, name string) string {
 	return strings.TrimPrefix(name, "goravel-")
 }
 
-// ShortName returns the short name of the package, removing the 'goravel-' prefix.
-func (p *PackageName) ShortName() string {
-	if p.name == "" {
-		p.name = "default"
-	}
-	return strings.TrimPrefix(p.name, "goravel-")
-}
-
 // GetBasePath returns the base path of the package, optionally appending a directory.
 func (p *PackageName) GetBasePath(directory ...string) string {
 	if len(directory) == 0 {
-		return p.basePath
+		return p.BasePath
 	}
-	return filepath.Join(append([]string{p.basePath}, directory...)...)
+	return filepath.Join(append([]string{p.BasePath}, directory...)...)
 }
 
 // SetBasePath sets the base path of the package.
 func (p *PackageName) SetBasePath(path string) *PackageName {
-	p.basePath = path
+	p.BasePath = path
 	return p
 }
 

@@ -1,10 +1,10 @@
 package tools
 
-type PackageAssets struct {
+type AssetTools struct {
 	Enabled bool
 }
 
-func (a *PackageAssets) EnableAssets() *PackageAssets {
+func (a *AssetTools) EnableAssets() *AssetTools {
 	a.Enabled = true
 	return a
 }

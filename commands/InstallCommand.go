@@ -12,26 +12,25 @@ import (
 
 // InstallCommand is a Goravel command for installing packages.
 type InstallCommand struct {
-	Package                  *Package
-	StartWith                func(*InstallCommand) // Function to run at the start of installation
+	StartFunc                func(*InstallCommand) // Function to run at the start of installation
 	Publishes                []string              // Tags for resources to publish (e.g., "config", "migrations")
-	AskToRunMigrations       bool                  // Whether to ask to run migrations
+	RunMigrations            bool                  // Whether to ask to run migrations
 	CopyServiceProviderInApp bool                  // Whether to copy the service provider to the app
 	StarRepo                 string                // GitHub repo to ask the user to star (e.g., "spatie/laravel-package-tools")
-	EndWith                  func(*InstallCommand) // Function to run at the end of installation
+	EndFunc                  func(*InstallCommand) // Function to run at the end of installation
+	Package                  SudoPackage
 }
 
-// Package represents the package being installed.
-type Package struct {
-	ShortName               string // Short name of the package (e.g., "example")
-	Name                    string // Full name of the package (e.g., "Example Package")
-	PublishableProviderName string // Name of the service provider to publish (e.g., "ExampleServiceProvider")
+type SudoPackage struct {
+	PublishableProviderName string
+	ShortName               string
+	FullName                string
 }
 
 // NewInstallCommand creates a new InstallCommand instance.
-func NewInstallCommand(pkg *Package) *InstallCommand {
+func NewInstallCommand(p SudoPackage) *InstallCommand {
 	return &InstallCommand{
-		Package: pkg,
+		Package: p,
 	}
 }
 
@@ -42,7 +41,7 @@ func (ic *InstallCommand) Signature() string {
 
 // Description defines the command description for Goravel.
 func (ic *InstallCommand) Description() string {
-	return fmt.Sprintf("Install %s", ic.Package.Name)
+	return fmt.Sprintf("Install %s", ic.Package.FullName)
 }
 
 // Extend registers the command with Goravel.
@@ -55,8 +54,8 @@ func (ic *InstallCommand) Extend() command.Extend {
 // Handle executes the installation process.
 func (ic *InstallCommand) Handle(ctx console.Context) error {
 	// Run the start function if defined
-	if ic.StartWith != nil {
-		ic.StartWith(ic)
+	if ic.StartFunc != nil {
+		ic.StartFunc(ic)
 	}
 
 	// Publish resources
@@ -67,7 +66,7 @@ func (ic *InstallCommand) Handle(ctx console.Context) error {
 	}
 
 	// Ask to run migrations
-	if ic.AskToRunMigrations {
+	if ic.RunMigrations {
 		if confirm(ctx, "Would you like to run the migrations now?") {
 			ctx.Info("Running migrations...")
 			ic.call("migrate")
@@ -92,8 +91,8 @@ func (ic *InstallCommand) Handle(ctx console.Context) error {
 	ctx.Info(fmt.Sprintf("%s has been installed!", ic.Package.ShortName))
 
 	// Run the end function if defined
-	if ic.EndWith != nil {
-		ic.EndWith(ic)
+	if ic.EndFunc != nil {
+		ic.EndFunc(ic)
 	}
 
 	return nil
@@ -120,9 +119,9 @@ func (ic *InstallCommand) PublishMigrations() *InstallCommand {
 	return ic.Publish("migrations")
 }
 
-// AskToRunMigrations enables the migration prompt.
+// RunMigrations enables the migration prompt.
 func (ic *InstallCommand) AskToRunMigrations() *InstallCommand {
-	ic.AskToRunMigrations = true
+	ic.RunMigrations = true
 	return ic
 }
 
@@ -140,13 +139,13 @@ func (ic *InstallCommand) AskToStarRepoOnGitHub(vendorSlashRepoName string) *Ins
 
 // StartWith sets the function to run at the start of installation.
 func (ic *InstallCommand) StartWith(callable func(*InstallCommand)) *InstallCommand {
-	ic.StartWith = callable
+	ic.StartFunc = callable
 	return ic
 }
 
 // EndWith sets the function to run at the end of installation.
 func (ic *InstallCommand) EndWith(callable func(*InstallCommand)) *InstallCommand {
-	ic.EndWith = callable
+	ic.EndFunc = callable
 	return ic
 }
 
@@ -158,7 +157,7 @@ func (ic *InstallCommand) copyServiceProviderInApp() *InstallCommand {
 	}
 
 	// Simulate copying the service provider
-	ic.callSilent("publish", "--tag", fmt.Sprintf("%s-provider", ic.Package.ShortName))
+	ic.callSilently("publish", "--tag", fmt.Sprintf("%s-provider", ic.Package.ShortName))
 
 	// Simulate registering the provider
 	fmt.Printf("Registered provider: %s\n", providerName)

@@ -1,23 +1,27 @@
 package tools
 
-type PackageRoutes struct {
-	RouteFileNames []string
+type RoutesTools struct {
+	FileNames []string
+}
+
+func NewPackageRoutes() *RoutesTools {
+	return &RoutesTools{}
 }
 
 // AddRoute adds a single route file name to the list.
-func (r *PackageRoutes) AddRoute(routeFileName string) *PackageRoutes {
-	r.RouteFileNames = append(r.RouteFileNames, routeFileName)
+func (r *RoutesTools) AddRoute(routeFileName string) *RoutesTools {
+	r.FileNames = append(r.FileNames, routeFileName)
 	return r
 }
 
 // AddRoutes adds multiple route file names to the list.
-func (r *PackageRoutes) AddRoutes(routeFileNames ...interface{}) *PackageRoutes {
+func (r *RoutesTools) AddRoutes(routeFileNames ...interface{}) *RoutesTools {
 	for _, route := range routeFileNames {
 		switch v := route.(type) {
 		case string:
-			r.RouteFileNames = append(r.RouteFileNames, v)
+			r.FileNames = append(r.FileNames, v)
 		case []string:
-			r.RouteFileNames = append(r.RouteFileNames, v...)
+			r.FileNames = append(r.FileNames, v...)
 		}
 	}
 	return r

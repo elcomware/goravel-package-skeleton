@@ -1,27 +1,27 @@
 package tools
 
-type PackageConfigs struct {
-	FileNames []string
-	ShortName string
+type ConfigTools struct {
+	ConfigFiles []string
+	ShortName   string
 }
 
 // AddConfigFile sets configuration file names.
-func (c *PackageConfigs) AddConfigFile(configFileName ...string) *PackageConfigs {
+func (c *ConfigTools) AddConfigFile(configFileName ...string) *ConfigTools {
 	if len(configFileName) == 0 {
 		// Default to the package's short name
 		configFileName = []string{c.ShortName}
 	}
 
-	c.FileNames = append(c.FileNames, configFileName...)
+	c.ConfigFiles = append(c.ConfigFiles, configFileName...)
 	return c
 }
 
-/*func (c *PackageConfigs) HasConfigFile(configFileName ...string) *PackageConfigs {
+/*func (c *ConfigTools) HasConfigFile(configFileName ...string) *ConfigTools {
 	if len(configFileName) == 0 {
 		configFileName = []string{c.ShortName}
 	}
 
-	c.FileNames = configFileName
+	c.Files = configFileName
 	return c
 }
 */

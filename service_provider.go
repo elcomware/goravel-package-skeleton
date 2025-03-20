@@ -14,7 +14,7 @@ import (
 
 const Binding = "packageName"
 
-var App foundation.Application
+//var App foundation.Application
 
 type ServiceProvider struct {
 	packageInstance *PackageName
@@ -27,10 +27,10 @@ func (sp *ServiceProvider) ConfigurePackage(pkg *PackageName) {
 
 // Register is called when the package is registered.
 func (sp *ServiceProvider) Register(app foundation.Application) {
-	App = app
+	//App = app
 	sp.registeringPackage(app)
 	//initialise package new instance and inject dependencies
-	sp.packageInstance = NewPackageName(app.MakeConfig())
+	sp.packageInstance = &PackageName{} //NewPackageName(app.MakeConfig())
 
 	//bind faced to package
 	app.Bind(Binding, func(app foundation.Application) (any, error) {
@@ -38,21 +38,21 @@ func (sp *ServiceProvider) Register(app foundation.Application) {
 	})
 
 	//Set package base directory
-	sp.packageInstance.SetBasePath(sp.getPackageBaseDir())
+	sp.packageInstance.SetBasePath(sp.GetPackageBaseDir())
 
 	sp.ConfigurePackage(sp.packageInstance)
 
-	if sp.packageInstance.name == "" {
-		panic("Package name is required")
+	if sp.packageInstance.FullName == "" {
+		panic("Package FullName is required")
 	}
 
 	sp.registerConfigs()
-	sp.packageRegistered()
+	sp.packageRegistered(app)
 
 }
 
 // GetPackageBaseDir returns the base directory of the package.
-func (sp *ServiceProvider) getPackageBaseDir() string {
+func (sp *ServiceProvider) GetPackageBaseDir() string {
 	reflector := reflect.ValueOf(sp).Elem()
 	packagePath := reflector.Type().PkgPath()
 	return filepath.Dir(packagePath)
@@ -65,18 +65,18 @@ func (sp *ServiceProvider) registeringPackage(app foundation.Application) {
 
 // RegisterConfigs registers the package's configuration files.
 func (sp *ServiceProvider) registerConfigs() {
-	if len(sp.packageInstance.configFileNames) == 0 {
+	if len(sp.packageInstance.ConfigTools.ConfigFiles) == 0 {
 		return
 	}
 
-	for _, configFileName := range sp.packageInstance.configFileNames {
+	for _, configFileName := range sp.packageInstance.ConfigTools.ConfigFiles {
 		configPath := filepath.Join(sp.packageInstance.GetBasePath(), "..", "config", configFileName+".go")
 		facades.Config().Add(configFileName, configPath)
 	}
 }
 
 // PackageRegistered is called after the package is registered.
-func (sp *ServiceProvider) packageRegistered() {
+func (sp *ServiceProvider) packageRegistered(app foundation.Application) {
 	// Optional: Override this method in your package.
 }
 
@@ -84,26 +84,21 @@ func (sp *ServiceProvider) packageRegistered() {
 func (sp *ServiceProvider) Boot(app foundation.Application) {
 
 	sp.BootingPackage()
-	app.Publishes("github.com/vendorName/packageName", map[string]string{
-		"config/packageName.go": app.ConfigPath("packageName.go"),
-	}, "packageName-config")
-	app.Commands(
-		[]console.Command{
-			commands.NewPackageName(),
-		})
 
-	sp.bootPackageAssets(app).
+	packageName := filepath.Join("github.com", "vendorName", "packageName")
+
+	sp.bootPackageAssets(app, packageName).
 		bootPackageCommands(app).
 		bootPackageConsoleCommands(app).
-		bootPackageConfigs(app).
-		bootPackageMigrations(app).
-		bootPackageProviders(app).
-		bootPackageRoutes(app).
-		bootPackageTranslations(app).
-		bootPackageViews(app).
-		bootPackageViewComponents(app).
-		bootPackageViewComposers(app).
-		bootPackageViewSharedData(app)
+		bootPackageConfigs(app, packageName).
+		bootPackageMigrations(app, packageName).
+		bootPackageProviders(app, packageName).
+		bootPackageRoutes(app, packageName).
+		bootPackageTranslations(app, packageName).
+		bootPackageViews(app, packageName).
+		bootPackageViewComponents(app, packageName).
+		bootPackageViewComposers(app, packageName).
+		bootPackageViewSharedData(app, packageName)
 
 	sp.PackageBooted()
 
@@ -120,18 +115,18 @@ func (sp *ServiceProvider) PackageBooted() {
 }
 
 // BootPackageAssets boots the package's assets.
-func (sp *ServiceProvider) bootPackageAssets(app foundation.Application) *ServiceProvider {
+func (sp *ServiceProvider) bootPackageAssets(app foundation.Application, packageName string) *ServiceProvider {
 
-	if !sp.packageInstance.hasAssets || !sp.packageInstance.IsRunningInConsole() {
+	if !sp.packageInstance.AssetTools.Enabled || !sp.packageInstance.IsRunningInConsole() {
 		return sp
 	}
 
 	//vendor and app assets paths
-	vendorAssets := "public" //filepath.Join(sp.packageInstance.basePath, "..", "resources", "dist")
+	vendorAssets := "public" //filepath.Join(sp.packageInstance.BasePath, "..", "resources", "dist")
 	appAssets := "vendor"    //filepath.Join("vendor", sp.packageInstance.ShortName())
 
 	// publish vendor assets to app
-	app.Publishes("github.com/goravel/example-package", map[string]string{
+	app.Publishes(packageName, map[string]string{
 		vendorAssets: app.PublicPath(appAssets),
 	}, "packageName-assets")
 
@@ -140,13 +135,25 @@ func (sp *ServiceProvider) bootPackageAssets(app foundation.Application) *Servic
 
 // BootPackageCommands boots the package's commands.
 func (sp *ServiceProvider) bootPackageCommands(app foundation.Application) *ServiceProvider {
-	if len(sp.packageInstance.commands) == 0 {
+
+	// register package command
+	app.Commands(
+		[]console.Command{
+			commands.NewPackageName(),
+			commands.NewInstallCommand(commands.SudoPackage{
+				ShortName:               sp.packageInstance.ShortName,
+				FullName:                sp.packageInstance.FullName,
+				PublishableProviderName: sp.packageInstance.PublishableProviderName,
+			}),
+		})
+
+	if len(sp.packageInstance.CommandTools.Commands) == 0 {
 		return sp
 	}
-
+	///register other commands if available
 	//facades.Artisan().Register(sp.packageInstance.commands)
 	app.Commands(
-		sp.packageInstance.commands,
+		sp.packageInstance.CommandTools.Commands,
 	)
 
 	return sp
@@ -154,26 +161,31 @@ func (sp *ServiceProvider) bootPackageCommands(app foundation.Application) *Serv
 
 // BootPackageConsoleCommands boots the package's console commands.
 func (sp *ServiceProvider) bootPackageConsoleCommands(app foundation.Application) *ServiceProvider {
-	if len(sp.packageInstance.ConsoleCommands) == 0 {
+	if len(sp.packageInstance.CommandTools.ConsoleCommands) == 0 {
 		return sp
 	}
 
 	app.Commands(
-		sp.packageInstance.ConsoleCommands,
+		sp.packageInstance.CommandTools.ConsoleCommands,
 	)
 
 	return sp
 }
 
 // BootPackageConfigs boots the package's configuration files.
-func (sp *ServiceProvider) bootPackageConfigs(app foundation.Application) *ServiceProvider {
+func (sp *ServiceProvider) bootPackageConfigs(app foundation.Application, packageName string) *ServiceProvider {
 	if !sp.packageInstance.IsRunningInConsole() {
 		return sp
 	}
 
-	for _, configFileName := range sp.packageInstance.configFileNames {
-		//vendorConfig := filepath.Join(sp.packageInstance.basePath(), "..", "config", configFileName+".go")
-		packageName := filepath.Join("github.com", "vendorName", "packageName")
+	//publish package configs
+	app.Publishes(packageName, map[string]string{
+		"config/packageName.go": app.ConfigPath("packageName.go"),
+	}, "packageName-config")
+
+	// publish other configs
+	for _, configFileName := range sp.packageInstance.ConfigTools.ConfigFiles {
+		//vendorConfig := filepath.Join(sp.packageInstance.BasePath(), "..", "config", configFileName+".go")
 		vendorConfig := filepath.Join("config", configFileName+".go")
 		appConfig := filepath.Join(configFileName + ".go")
 
@@ -186,19 +198,19 @@ func (sp *ServiceProvider) bootPackageConfigs(app foundation.Application) *Servi
 }
 
 // BootPackageMigrations boots the package's migrations.
-func (sp *ServiceProvider) bootPackageMigrations(app foundation.Application) *ServiceProvider {
-	if sp.packageInstance.discoverMigrations {
-		sp.discoverPackageMigrations()
+func (sp *ServiceProvider) bootPackageMigrations(app foundation.Application, packageName string) *ServiceProvider {
+	if sp.packageInstance.MigrationTools.Discovers {
+		sp.discoverPackageMigrations(app, packageName)
 		return sp
 	}
 
 	now := time.Now()
 
-	for _, migrationFileName := range sp.packageInstance.migrationFileNames {
+	for _, migrationFileName := range sp.packageInstance.MigrationTools.Files {
 		packageName := filepath.Join("github.com", "vendorName", "packageName")
-		//vendorMigration := filepath.Join(sp.packageInstance.basePath, "..", "database", "migrations", migrationFileName+".go")
+		//vendorMigration := filepath.Join(sp.packageInstance.BasePath, "..", "database", "migrations", migrationFileName+".go")
 		vendorMigration := filepath.Join("database", "migrations", migrationFileName+".go")
-		appMigration := sp.generateMigrationName(migrationFileName, now.Add(time.Second))
+		appMigration := sp.GenerateMigrationName(migrationFileName, now.Add(time.Second))
 
 		if !fileExists(vendorMigration) {
 			vendorMigration += ".stub"
@@ -211,160 +223,178 @@ func (sp *ServiceProvider) bootPackageMigrations(app foundation.Application) *Se
 
 		}
 
-		if sp.packageInstance.RunsMigrations {
+		/*if sp.packageInstance.CanRun {
+			app.DatabasePath(appMigration)
 			facades.Migration.Load(vendorMigration)
 			app.DatabasePath()
-		}
+		}*/
 	}
 
 	return sp
 }
 
 // BootPackageProviders boots the package's service providers.
-func (sp *ServiceProvider) bootPackageProviders() *ServiceProvider {
-	if sp.packageInstance.PublishableProviderName == "" || !facades.App.RunningInConsole() {
+func (sp *ServiceProvider) bootPackageProviders(app foundation.Application, packageName string) *ServiceProvider {
+	if sp.packageInstance.PublishableProviderName == "" || !sp.packageInstance.IsRunningInConsole() {
 		return sp
 	}
 
 	providerName := sp.packageInstance.PublishableProviderName
-	vendorProvider := filepath.Join(sp.packageInstance.basePath(), "..", "resources", "stubs", providerName+".php.stub")
-	appProvider := filepath.Join("app", "Providers", providerName+".php")
+	vendorProvider := filepath.Join(sp.packageInstance.BasePath, "stubs", "providers", providerName+".go.stub")
+	appProvider := filepath.Join(app.Path(), "Providers", providerName+"_service_provider.go")
 
-	facades.Publisher.Publish(vendorProvider, appProvider, sp.packageInstance.ShortName()+"-provider")
+	app.Publishes(packageName, map[string]string{
+		vendorProvider: appProvider,
+	}, "providers")
 
 	return sp
+
 }
 
 // BootPackageRoutes boots the package's routes.
-func (sp *ServiceProvider) bootPackageRoutes() *ServiceProvider {
-	if len(sp.packageInstance.RouteFileNames) == 0 {
+func (sp *ServiceProvider) bootPackageRoutes(app foundation.Application, packageName string) *ServiceProvider {
+	if len(sp.packageInstance.RouteTools.FileNames) == 0 {
 		return sp
 	}
 
-	for _, routeFileName := range sp.packageInstance.RouteFileNames {
-		routePath := filepath.Join(sp.packageInstance.basePath(), "..", "routes", routeFileName+".php")
-		facades.Route.Load(routePath)
+	for _, routeFileName := range sp.packageInstance.RouteTools.FileNames {
+		vendorRoutes := filepath.Join(sp.packageInstance.BasePath, "..", "routes", routeFileName+".php")
+		appRoute := filepath.Join(app.Path(), "routes", packageName+"_service_provider.go")
+
+		app.Publishes(packageName, map[string]string{
+			vendorRoutes: appRoute,
+		}, "routes")
 	}
 
 	return sp
 }
 
 // BootPackageTranslations boots the package's translations.
-func (sp *ServiceProvider) bootPackageTranslations() *ServiceProvider {
-	if !sp.packageInstance.HasTranslations {
+func (sp *ServiceProvider) bootPackageTranslations(app foundation.Application, packageName string) *ServiceProvider {
+	if !sp.packageInstance.TranslationTools.Enabled {
 		return sp
 	}
 
-	vendorTranslations := filepath.Join(sp.packageInstance.basePath(), "..", "resources", "lang")
-	appTranslations := filepath.Join("resources", "lang", "vendor", sp.packageInstance.ShortName())
+	vendorTranslations := filepath.Join(sp.packageInstance.BasePath, "..", "resources", "lang")
+	appTranslations := filepath.Join("resources", "lang", "vendor", sp.packageInstance.ShortName)
 
-	facades.Translation.Load(vendorTranslations, sp.packageInstance.ShortName())
+	/*facades.Translation.Load(vendorTranslations, sp.packageInstance.ShortName)
 	facades.Translation.LoadJSON(vendorTranslations)
-	facades.Translation.LoadJSON(appTranslations)
+	facades.Translation.LoadJSON(appTranslations)*/
 
-	if facades.App.RunningInConsole() {
-		facades.Publisher.Publish(vendorTranslations, appTranslations, sp.packageInstance.ShortName()+"-translations")
+	if sp.packageInstance.IsRunningInConsole() {
+
+		app.Publishes(packageName, map[string]string{
+			vendorTranslations: appTranslations,
+		}, "translations")
 	}
 
 	return sp
 }
 
 // BootPackageViews boots the package's views.
-func (sp *ServiceProvider) bootPackageViews(app foundation.Application) *ServiceProvider {
-	if !sp.packageInstance.HasViews {
+func (sp *ServiceProvider) bootPackageViews(app foundation.Application, packageName string) *ServiceProvider {
+	if !sp.packageInstance.ViewsTools.Enabled {
 		return sp
 	}
 
-	namespace := sp.packageInstance.ViewNamespace
-	vendorViews := filepath.Join(sp.packageInstance.basePath(), "..", "resources", "views")
-	appViews := filepath.Join("resources", "views", "vendor", sp.packageInstance.ShortName())
+	//namespace := sp.packageInstance.ViewsTools.ViewNamespace()
+	vendorViews := filepath.Join(sp.packageInstance.BasePath, "..", "resources", "views")
+	appViews := filepath.Join("resources", "views", "vendor", sp.packageInstance.ShortName)
 
-	facades.View.Load(vendorViews, namespace)
+	//facades.View.Load(vendorViews, namespace)
 
 	if sp.packageInstance.IsRunningInConsole() {
-		facades.Publisher.Publish(vendorViews, appViews, sp.packageInstance.ShortName()+"-views")
-		app.Publishes()
+		app.Publishes(packageName, map[string]string{
+			vendorViews: appViews,
+		})
 	}
 
 	return sp
 }
 
 // BootPackageViewComponents boots the package's view components.
-func (sp *ServiceProvider) bootPackageViewComponents() *ServiceProvider {
-	if len(sp.packageInstance.ViewComponents) == 0 {
+func (sp *ServiceProvider) bootPackageViewComponents(app foundation.Application, packageName string) *ServiceProvider {
+	if len(sp.packageInstance.ViewComponentTools.Components) == 0 {
 		return sp
 	}
 
-	for componentClass, prefix := range sp.packageInstance.ViewComponents {
+	/*for componentClass, prefix := range sp.packageInstance.ViewComponentTools.Components {
 		facades.View.Component(prefix, componentClass)
-	}
+	}*/
 
-	if facades.App.RunningInConsole() {
-		vendorComponents := filepath.Join(sp.packageInstance.basePath(), "Components")
-		appComponents := filepath.Join("app", "View", "Components", "vendor", sp.packageInstance.ShortName())
+	if sp.packageInstance.IsRunningInConsole() {
+		vendorComponents := filepath.Join(sp.packageInstance.BasePath, "Components")
+		appComponents := filepath.Join("app", "View", "Components", "vendor", sp.packageInstance.ShortName)
 
-		facades.Publisher.Publish(vendorComponents, appComponents, sp.packageInstance.Name+"-components")
+		//facades.Publisher.Publish(vendorComponents, appComponents, sp.packageInstance.FullName+"-components")
+		app.Publishes(packageName, map[string]string{
+			vendorComponents: appComponents,
+		})
 	}
 
 	return sp
 }
 
 // BootPackageViewComposers boots the package's view composers.
-func (sp *ServiceProvider) bootPackageViewComposers() *ServiceProvider {
-	if len(sp.packageInstance.ViewComposers) == 0 {
+func (sp *ServiceProvider) bootPackageViewComposers(app foundation.Application, packageName string) *ServiceProvider {
+	if len(sp.packageInstance.ViewComposerTools.Composers) == 0 {
 		return sp
 	}
 
-	for viewName, viewComposer := range sp.packageInstance.ViewComposers {
-		facades.View.Composer(viewName, viewComposer)
+	for viewName, viewComposer := range sp.packageInstance.ViewComposerTools.Composers {
+		app.Publishes(packageName, map[string]string{
+			viewName: viewComposer,
+		})
 	}
 
 	return sp
 }
 
 // BootPackageViewSharedData boots the package's shared view data.
-func (sp *ServiceProvider) bootPackageViewSharedData() *ServiceProvider {
-	if len(sp.packageInstance.SharedViewData) == 0 {
+func (sp *ServiceProvider) bootPackageViewSharedData(app foundation.Application, packageName string) *ServiceProvider {
+	if len(sp.packageInstance.ViewSharedDataTools.SharedData) == 0 {
 		return sp
 	}
 
-	for name, value := range sp.packageInstance.SharedViewData {
-		facades.View.Share(name, value)
-	}
+	/*for FullName, value := range sp.packageInstance.ViewSharedDataTools.SharedData {
+		facades.View.Share(FullName, value)
+	}*/
 
 	return sp
 }
 
 // DiscoverPackageMigrations discovers and registers package migrations.
-func (sp *ServiceProvider) discoverPackageMigrations() {
+func (sp *ServiceProvider) discoverPackageMigrations(app foundation.Application, packageName string) {
 	now := time.Now()
-	migrationsPath := strings.Trim(sp.packageInstance.MigrationsPath, "/")
 
-	files, _ := os.ReadDir(filepath.Join(sp.packageInstance.basePath, "..", migrationsPath))
+	migrationsPath := strings.Trim(*sp.packageInstance.MigrationTools.Path, "/")
+
+	files, _ := os.ReadDir(filepath.Join(sp.packageInstance.BasePath, "..", migrationsPath))
 
 	for _, file := range files {
-		filePath := filepath.Join(sp.packageInstance.basePath(), "..", migrationsPath, file.Name())
-		migrationFileName := strings.TrimSuffix(file.Name(), ".php")
+		vendorMigrations := filepath.Join(sp.packageInstance.BasePath, "..", migrationsPath, file.Name())
+		migrationFileName := strings.TrimSuffix(file.Name(), ".go")
 		migrationFileName = strings.TrimSuffix(migrationFileName, ".stub")
 
-		appMigration := sp.generateMigrationName(migrationFileName, now.Add(time.Second))
+		appMigration := sp.GenerateMigrationName(migrationFileName, now.Add(time.Second))
 
-		if facades.App.RunningInConsole() {
-			facades.Publisher.Publish(filePath, appMigration, sp.packageInstance.ShortName()+"-migrations")
+		if sp.packageInstance.IsRunningInConsole() {
+			//facades.Publisher.Publish(filePath, appMigration, sp.packageInstance.ShortName()+"-migrations")
+			app.Publishes(packageName, map[string]string{
+				vendorMigrations: appMigration,
+			})
 		}
 
-		if sp.packageInstance.RunsMigrations {
-			facades.Migration.Load(filePath)
-		}
 	}
 }
 
-// GenerateMigrationName generates a unique migration name.
-func (sp *ServiceProvider) generateMigrationName(migrationFileName string, now time.Time) string {
+// GenerateMigrationName generates a unique migration FullName.
+func (sp *ServiceProvider) GenerateMigrationName(migrationFileName string, now time.Time) string {
 	migrationsPath := filepath.Join("database", "migrations", filepath.Dir(migrationFileName))
 	migrationFileName = filepath.Base(migrationFileName)
 
-	len := len(migrationFileName) + 4
+	//len := len(migrationFileName) + 4
 
 	if strings.Contains(migrationFileName, "/") {
 		migrationsPath = filepath.Join(migrationsPath, strings.Split(migrationFileName, "/")[0])

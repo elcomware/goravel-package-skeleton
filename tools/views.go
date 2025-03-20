@@ -1,20 +1,20 @@
 package tools
 
-type PackageViews struct {
-	Enable    bool
+type ViewTools struct {
+	Enabled   bool
 	Namespace *string
 	ShortName string
 }
 
 // HasViews enables views and sets an optional namespace.
-func (v *PackageViews) HasViews(namespace *string) *PackageViews {
-	v.Enable = true
+func (v *ViewTools) HasViews(namespace *string) *ViewTools {
+	v.Enabled = true
 	v.Namespace = namespace
 	return v
 }
 
 // ViewNamespace returns the set namespace or falls back to ShortName().
-func (v *PackageViews) ViewNamespace() string {
+func (v *ViewTools) ViewNamespace() string {
 	if v.Namespace != nil {
 		return *v.Namespace
 	}
