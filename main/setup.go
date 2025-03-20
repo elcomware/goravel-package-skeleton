@@ -270,6 +270,8 @@ func initializePackage() {
 	renameFile("./packageName.go", fmt.Sprintf("%s.go", packageSlug))
 
 	// Clean up
+	removeFile("./tests")
+
 	if confirm("Execute `go mod tidy` and run tests?", true) {
 		commander.Run("go mod tidy")
 		commander.Run("go test ./...")
