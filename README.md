@@ -1,10 +1,33 @@
-# :packageName
+<div align="center">
 
-[![Latest Version on pkg.go.dev](https://img.shields.io/pkg.go.dev/v/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
+<img src="https://github.com/elcomware/goravel-package-skeleton/blob/main/skeleton.png" width="300" alt="Logo">
+
+[![Doc](https://pkg.go.dev/badge/github.com/:vendor_slug/:package_slug)](https://pkg.go.dev/github.com/:vendor_slug/:package_slug)
+[![Go](https://img.shields.io/github/go-mod/go-version/:vendor_slug/:package_slug)](https://go.dev/)
+[![Release](https://img.shields.io/github/release/:vendor_slug/:package_slug.svg)](https://github.com/:vendor_slug/:package_slug/releases)
+[![Test](https://github.com/:vendor_slug/:package_slug/actions/workflows/test.yml/badge.svg)](https://github.com/:vendor_slug/:package_slug/actions)
+[![Report Card](https://goreportcard.com/badge/github.com/:vendor_slug/:package_slug)](https://goreportcard.com/report/github.com/:vendor_slug/:package_slug)
+[![Codecov](https://codecov.io/gh/:vendor_slug/:package_slug/branch/master/graph/badge.svg)](https://codecov.io/gh/:vendor_slug/:package_slug)
+![License](https://img.shields.io/github/license/:vendor_slug/:package_slug)
+
+</div>
+
+English | [中文](./README_zh.md)
+
+## About :package_slug
+
+:package_slug is a Goravel application framework package tool with complete functions and good scalability. As a starting scaffolding to help
+Gopher quickly build their own Goravel packages.
+
+The framework style is consistent with [Laravel-spatie-laravel-package-tools](https://github.com/spatie/laravel-package-tools), let Php developer don't need to learn a
+new framework, but also happy to play around Golang! In tribute to Laravel!
+
+Welcome to star, PR and issues！
+
 <!--delete-->
+
+## Getting started
+
 ---
 This repo can be used to scaffold a Goravel package. Follow these steps to get started:
 
