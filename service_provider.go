@@ -14,7 +14,7 @@ import (
 
 const Binding = "packageName"
 
-//var App foundation.Application
+var App foundation.Application
 
 type ServiceProvider struct {
 	packageInstance *PackageName
